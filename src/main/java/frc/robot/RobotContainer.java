@@ -6,6 +6,7 @@ package frc.robot;
 
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -15,38 +16,49 @@ import frc.robot.Subsystems.BasicSparkMax;
 
 public class RobotContainer {
 
-  private BasicSparkMax spark = new BasicSparkMax(2, MotorType.kBrushless);
+  private BasicSparkMax spark = new BasicSparkMax(17, MotorType.kBrushless);
   private CommandXboxController controller = new CommandXboxController(0);
+  private double runTime = 0;
+  private double runSpeed = 0;
+
+//   private XboxController controller2 = new XboxController(0);
 
   public RobotContainer() {
+    spark.configure(true, true, true, 0.2, 0.2);
+
     configureBindings();
 
+    // Put subsystem on the dashboard
+    SmartDashboard.putData(spark);
+
     // Put speed variable onto the dashboard
-    SmartDashboard.putNumber("Spark Speed", 0);
+    SmartDashboard.putNumber("Spark Speed", runSpeed);
 
     // Put time variable onto the dashboard
-    SmartDashboard.putNumber("Run Time", 0);
+    SmartDashboard.putNumber("Run Time", runTime);
 
     // Put commands on the dashboard
-    SmartDashboard.putData("Set", SparkMaxCommands.set(spark, SmartDashboard.getNumber("Spark Speed", 0)));
+    SmartDashboard.putData("Set", SparkMaxCommands.set(spark, runSpeed));
 
-    SmartDashboard.putData("Sensor", SparkMaxCommands.runToSensor(spark, SmartDashboard.getNumber("Spark Speed", 0)));
+    SmartDashboard.putData("Sensor", SparkMaxCommands.runToSensor(spark, runSpeed));
 
-    SmartDashboard.putData("Time", SparkMaxCommands.timedRun(spark, SmartDashboard.getNumber("Spark Speed", 0), 2));
+    SmartDashboard.putData("Time", SparkMaxCommands.timedRun(spark, runSpeed, runTime));
+  }
+
+  public BasicSparkMax getSpark() {
+    return spark;
   }
 
   private void configureBindings() {
     
+    // if (controller2.getRightTriggerAxis() > 0.2) spark.motor.set(0.25);
+
     // PRESS RIGHT BUMPER --> Increment Run Time
     controller
         .rightBumper()
         .onTrue(
             Commands.runOnce(
-                () ->
-                    SmartDashboard.putNumber(
-                        "Run Time",
-                        (SmartDashboard.getNumber("Run Time", 0) + .25)
-                    )
+                () -> runTime += 0.25
             )
         );
 
@@ -55,11 +67,7 @@ public class RobotContainer {
       .leftBumper()
       .onTrue(
           Commands.runOnce(
-              () ->
-                  SmartDashboard.putNumber(
-                      "Run Time",
-                      (SmartDashboard.getNumber("Run Time", 0) - .25)
-                  )
+              () -> runTime -= 0.25
           )
       );
 
@@ -68,13 +76,7 @@ public class RobotContainer {
         .b()
         .onTrue(
             Commands.runOnce(
-                () ->
-                    SmartDashboard.putNumber(
-                        "Spark Speed",
-                        (SmartDashboard.getNumber("Spark Speed", 0) + .1) > 1
-                            ? 0
-                            : (SmartDashboard.getNumber("Spark Speed", 0) + .1)
-                    )
+                () -> runSpeed += ((runSpeed + 0.1) > 1) ? -runSpeed : 0.1
             )
         );
 
@@ -83,13 +85,7 @@ public class RobotContainer {
     .x()
     .onTrue(
         Commands.runOnce(
-            () ->
-                SmartDashboard.putNumber(
-                    "Spark Speed",
-                    (SmartDashboard.getNumber("Spark Speed", 0) - .1) < -1
-                        ? 1
-                        : (SmartDashboard.getNumber("Spark Speed", 0) - .1)
-                )
+            () -> runSpeed -= ((runSpeed - 0.1) < 1) ? -runSpeed : 0.1
         )
     );
 

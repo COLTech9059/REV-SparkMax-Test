@@ -5,6 +5,7 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import com.revrobotics.spark.SparkMax;
@@ -16,7 +17,7 @@ import com.revrobotics.spark.SparkBase.ResetMode;
  */
 public class BasicSparkMax extends SubsystemBase {
 
-    private SparkMax motor;
+    public SparkMax motor;
     private DigitalInput switch1 = new DigitalInput(0);
 
     /**
@@ -50,6 +51,8 @@ public class BasicSparkMax extends SubsystemBase {
         .openLoopRampRate(openLoopRampRate);
 
         motor.configure(config, reset, persist);
+
+        SmartDashboard.putBoolean("Bottom Sensor", !switch1.get());
     }
 
     /**
@@ -88,7 +91,7 @@ public class BasicSparkMax extends SubsystemBase {
      * @param speed Target speed, expressed as a double from -1.00 - 1.00
      */
     public void runToSensor(double speed) {
-        if (switch1.get()) motor.stopMotor();
+        if (!switch1.get()) motor.stopMotor();
         else motor.set(speed);
     }
 }
